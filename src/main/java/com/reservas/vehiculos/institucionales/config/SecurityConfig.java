@@ -13,7 +13,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Solo para desarrollo, revisar para producción
+            .csrf(csrf -> csrf.disable())  // Desactivar solo para desarrollo, revisar para producción
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/vehiculos/**").hasAnyRole("ADMIN", "INSPECTOR")
                 .anyRequest().authenticated()
