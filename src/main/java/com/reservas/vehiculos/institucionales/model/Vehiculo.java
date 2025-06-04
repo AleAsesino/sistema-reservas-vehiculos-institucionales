@@ -1,6 +1,5 @@
 package com.reservas.vehiculos.institucionales.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +13,6 @@ import java.util.List;
 @Builder
 @Entity
 public class Vehiculo {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
