@@ -1,17 +1,17 @@
 package com.reservas.vehiculos.institucionales.controller;
 
 
-import com.reservas.vehiculos.institucionales.dto.VehiculoDTO;
+
 import com.reservas.vehiculos.institucionales.model.Vehiculo;
 import com.reservas.vehiculos.institucionales.service.VehiculoService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/vehiculos")
 public class VehiculoController {
@@ -19,42 +19,33 @@ public class VehiculoController {
     @Autowired
     private VehiculoService vehiculoService;
 
+
+    // Listar todos los vehículos - accesible para ADMIN e INSPECTOR
     @GetMapping
-    public List<Vehiculo> listarVehiculos() {
-        return vehiculoService.listarTodos();
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSPECTOR')")
+    public List<Vehiculo> getVehiculos() {
+        return vehiculoService.getAllVehiculos();
     }
 
+    // Crear un nuevo vehículo - solo ADMIN
     @PostMapping
-    public ResponseEntity<Vehiculo> crearVehiculo(@Valid @RequestBody VehiculoDTO vehiculoDTO) {
-        Vehiculo vehiculo = new Vehiculo();
-        vehiculo.setPlaca(vehiculoDTO.getPlaca());
-        vehiculo.setMarca(vehiculoDTO.getMarca());
-        vehiculo.setTipo(vehiculoDTO.getTipo());
-
-        Vehiculo nuevoVehiculo = vehiculoService.guardar(vehiculo);
-        return ResponseEntity.ok(nuevoVehiculo);
+    @PreAuthorize("hasRole('ADMIN')")
+    public Vehiculo saveVehiculo(@RequestBody Vehiculo vehiculo) {
+        return vehiculoService.saveVehiculo(vehiculo);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Vehiculo> obtenerVehiculoPorId(@PathVariable Long id) {
-        Vehiculo vehiculo = vehiculoService.obtenerPorId(id);
-        return ResponseEntity.ok(vehiculo);
-    }
-
+    // Actualizar un vehículo - solo ADMIN
     @PutMapping("/{id}")
-    public ResponseEntity<Vehiculo> actualizarVehiculo(@PathVariable Long id, @Valid @RequestBody VehiculoDTO vehiculoDTO) {
-        Vehiculo vehiculo = vehiculoService.obtenerPorId(id);
-        vehiculo.setPlaca(vehiculoDTO.getPlaca());
-        vehiculo.setMarca(vehiculoDTO.getMarca());
-        vehiculo.setTipo(vehiculoDTO.getTipo());
-
-        Vehiculo vehiculoActualizado = vehiculoService.guardar(vehiculo);
-        return ResponseEntity.ok(vehiculoActualizado);
+    @PreAuthorize("hasRole('ADMIN')")
+    public Vehiculo updateVehiculo(@PathVariable Long id, @RequestBody Vehiculo vehiculoDetalles) {
+        return vehiculoService.updateVehiculo(id, vehiculoDetalles);
     }
 
+    // Eliminar un vehículo - solo ADMIN
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarVehiculo(@PathVariable Long id) {
-        vehiculoService.eliminar(id);
-        return ResponseEntity.noContent().build();
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteVehiculo(@PathVariable Long id) {
+        vehiculoService.deleteVehiculo(id);
+
     }
 }
