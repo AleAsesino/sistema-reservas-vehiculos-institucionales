@@ -1,11 +1,11 @@
 package com.reservas.vehiculos.institucionales.model;
 
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
 
 @Getter
 @Setter
@@ -18,21 +18,18 @@ public class Reparacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private float costo;
+    private BigDecimal costo;
 
     private String descripcion;
 
-    private String doc_factura;
+    @Column(name = "doc_factura")
+    private String docFactura;
 
-    private LocalDateTime fecha_reparacion;
+    @Column(name = "fecha_reparacion")
+    private LocalDateTime fechaReparacion;
 
-
-
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "vehiculo_id")
     private Vehiculo vehiculo;
-
-
-
-
 }

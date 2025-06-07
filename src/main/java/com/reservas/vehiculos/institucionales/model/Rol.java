@@ -17,9 +17,16 @@ public class Rol {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nombre;
 
-    @ManyToMany(mappedBy = "roles")
-    @Builder.Default
-    private Set<Usuario> usuarios = new HashSet<>();  // Inicialización del Set de usuarios
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private NombreRol nombre;
+
+    public enum NombreRol {
+        ROL_USUARIO,
+        ROL_INSPECTOR,
+        ROL_ADMIN
+    }
+
+
 }

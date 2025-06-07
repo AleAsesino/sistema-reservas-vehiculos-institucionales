@@ -1,6 +1,4 @@
 package com.reservas.vehiculos.institucionales.service;
-
-
 import com.reservas.vehiculos.institucionales.model.Vehiculo;
 import com.reservas.vehiculos.institucionales.repository.VehiculoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +14,7 @@ public class VehiculoService {
 
     @Autowired
     private VehiculoRepository vehiculoRepository;
+
 
     @Cacheable("vehiculos")
     public List<Vehiculo> getAllVehiculos() {

@@ -1,7 +1,8 @@
 package com.reservas.vehiculos.institucionales.model;
 
-
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -19,12 +20,17 @@ public class Vehiculo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     @Column(unique = true)
+
     private String placa;
 
+    @NotBlank(message = "La marca es obligatoria")
     private String marca;
 
+    @NotBlank(message = "El tipo es obligatorio")
     private String tipo;
+
 
     private String color;
 
@@ -38,10 +44,13 @@ public class Vehiculo {
 
     private LocalDateTime fechaRegistro;
 
+
+    @JsonManagedReference
     @OneToMany(mappedBy = "vehiculo")
     private List<Reparacion> reparaciones;
 
     @ManyToMany(mappedBy = "vehiculos")
+    @JsonManagedReference
     private List<Reserva> reservas;
 }
 

@@ -1,6 +1,7 @@
 package com.reservas.vehiculos.institucionales.controller;
 
 
+
 import com.reservas.vehiculos.institucionales.model.Vehiculo;
 import com.reservas.vehiculos.institucionales.service.VehiculoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+
 @RequestMapping("/vehiculos")
+
 public class VehiculoController {
 
     @Autowired
     private VehiculoService vehiculoService;
+
 
     // Listar todos los vehículos - accesible para ADMIN e INSPECTOR
     @GetMapping
@@ -42,5 +46,6 @@ public class VehiculoController {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteVehiculo(@PathVariable Long id) {
         vehiculoService.deleteVehiculo(id);
+
     }
 }

@@ -1,5 +1,6 @@
 package com.reservas.vehiculos.institucionales.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,30 +23,52 @@ public class Usuario {
 
     private String nombre;
 
-    private String apellido_paterno;
+    @Column(name = "apellido_paterno")
+    private String apellidoPaterno;
 
-    private String apellido_materno;
+    @Column(name = "apellido_materno")
+    private String apellidoMaterno;
 
-    private LocalDate fecha_nacimiento;
+    @Column(name = "fecha_nacimiento")
+    private LocalDate fechaNacimiento;
 
     private String email;
 
-    private String cargo_publico;
+    @Column(name = "cargo_institucional")
+    private String cargoInstitucional;
 
     private String usuario;
 
     private String password;
 
-    private LocalDateTime fecha_registro;
+    @Column(name = "fecha_registro")
+    private LocalDateTime fechaRegistro;
+
+    @Column(name = "fecha_ultima_modificacion")
+    private LocalDateTime fechaUltimaModificacion;
+
+
+    @Column(name = "estado_cuenta")
+    private Boolean estadoCuenta;
+
+
+    private String ciudad;
+
+    private String genero;
+
+    @Column(name = "url_img")
+    private String urlImg;
 
     @OneToMany(mappedBy = "usuario")
+    @JsonManagedReference
     private List<Reserva> reservas;
 
     @ManyToMany(fetch = FetchType.EAGER) // Carga los roles de forma anticipada (EAGER) para evitar problemas de LazyInitializationException
+
     @JoinTable(
-            name = "usuario_roles", // Nombre de la tabla intermedia
-            joinColumns = @JoinColumn(name = "usuario_id"), // Columna que referencia al usuario
-            inverseJoinColumns = @JoinColumn(name = "rol_id") // Columna que referencia al rol
+            name = "usuario_roles",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "rol_id")
     )
     @Builder.Default // Añadido para evitar la advertencia de inicialización con @Builder
     private Set<Rol> roles = new HashSet<>();
