@@ -1,10 +1,13 @@
 package com.reservas.vehiculos.institucionales.model;
 
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+
 import java.util.List;
 
 @Getter
@@ -14,9 +17,11 @@ import java.util.List;
 @Builder
 @Entity
 public class Reserva {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
 
     private String descripcion;
 
@@ -38,6 +43,7 @@ public class Reserva {
             inverseJoinColumns = @JoinColumn(name = "vehiculo_id")
     )
     private List<Vehiculo> vehiculos;
+
 
     @ManyToOne
     @JsonBackReference

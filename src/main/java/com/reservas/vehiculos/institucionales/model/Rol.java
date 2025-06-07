@@ -1,18 +1,22 @@
 package com.reservas.vehiculos.institucionales.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Entity
-@Data
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@Entity
 public class Rol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -23,10 +27,6 @@ public class Rol {
         ROL_INSPECTOR,
         ROL_ADMIN
     }
-
-
-
-
 
 
 }

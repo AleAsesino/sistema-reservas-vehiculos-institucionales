@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -14,12 +15,14 @@ import java.util.List;
 @Builder
 @Entity
 public class Vehiculo {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "La placa es obligatoria")
-    @Column(unique = true, length = 10)
+
+    @Column(unique = true)
+
     private String placa;
 
     @NotBlank(message = "La marca es obligatoria")
@@ -27,6 +30,20 @@ public class Vehiculo {
 
     @NotBlank(message = "El tipo es obligatorio")
     private String tipo;
+
+
+    private String color;
+
+    private int capacidad;
+
+    private String estado;
+
+    private String descripcion;
+
+    private int cantAsientos;
+
+    private LocalDateTime fechaRegistro;
+
 
     @JsonManagedReference
     @OneToMany(mappedBy = "vehiculo")
@@ -36,3 +53,4 @@ public class Vehiculo {
     @JsonManagedReference
     private List<Reserva> reservas;
 }
+

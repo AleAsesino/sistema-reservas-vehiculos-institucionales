@@ -63,11 +63,14 @@ public class Usuario {
     @JsonManagedReference
     private List<Reserva> reservas;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER) // Carga los roles de forma anticipada (EAGER) para evitar problemas de LazyInitializationException
+
     @JoinTable(
             name = "usuario_roles",
             joinColumns = @JoinColumn(name = "usuario_id"),
             inverseJoinColumns = @JoinColumn(name = "rol_id")
     )
+    @Builder.Default // Añadido para evitar la advertencia de inicialización con @Builder
     private Set<Rol> roles = new HashSet<>();
 }
+
