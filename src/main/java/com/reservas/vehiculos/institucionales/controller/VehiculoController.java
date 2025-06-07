@@ -12,8 +12,8 @@ import java.util.List;
 
 @RestController
 
-@RequestMapping("/vehiculos")
-
+@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping("/api/vehiculos")
 public class VehiculoController {
 
     @Autowired

@@ -1,9 +1,11 @@
 package com.reservas.vehiculos.institucionales.controller;
 
 
+import com.reservas.vehiculos.institucionales.dto.AuthDTO;
 import com.reservas.vehiculos.institucionales.dto.UsuarioDTO;
 import com.reservas.vehiculos.institucionales.model.Usuario;
 import com.reservas.vehiculos.institucionales.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,11 @@ public class UsuarioController {
     public ResponseEntity<?> darBajaUsuario(@PathVariable Long id){
         usuarioService.DarBajaUsuario(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthDTO.JwtResponse> iniciarSesion(@Valid @RequestBody AuthDTO.LoginRequest loginRequest){
+        return ResponseEntity.ok(usuarioService.devolverToken(loginRequest));
     }
 
 }

@@ -6,9 +6,9 @@ services:
     ports:
       - "9090:9090"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/reservas_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/reservas_institucionales
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_DATASOURCE_PASSWORD=123456
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
@@ -22,11 +22,11 @@ services:
   db:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Expones el 5432 interno como 5433 en tu máquina
     environment:
-      - POSTGRES_DB=reservas_db
+      - POSTGRES_DB=reservas_institucionales
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=123456
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -47,4 +47,4 @@ volumes:
 
 networks:
   reservas-network:
-    driver: bridge 
+    driver: bridge

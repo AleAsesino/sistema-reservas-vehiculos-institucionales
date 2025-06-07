@@ -1,16 +1,31 @@
 package com.reservas.vehiculos.institucionales.service.impl;
 
+import com.reservas.vehiculos.institucionales.dto.AuthDTO;
 import com.reservas.vehiculos.institucionales.dto.UsuarioDTO;
 import com.reservas.vehiculos.institucionales.mapper.UsuarioMapper;
+import com.reservas.vehiculos.institucionales.model.Rol;
 import com.reservas.vehiculos.institucionales.model.Usuario;
+import com.reservas.vehiculos.institucionales.repository.RolRepository;
 import com.reservas.vehiculos.institucionales.repository.UsuarioRepository;
+import com.reservas.vehiculos.institucionales.security.jwt.JwtUtils;
 import com.reservas.vehiculos.institucionales.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,9 +37,35 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired
     private UsuarioMapper usuarioMapper;
 
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private RolRepository rolRepository;
+
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
+
+
+    public UsuarioServiceImpl(
+            UsuarioRepository usuarioRepository,
+            UsuarioMapper usuarioMapper,
+            AuthenticationManager authenticationManager,
+            RolRepository rolRepository,
+            PasswordEncoder passwordEncoder,
+            JwtUtils jwtUtils
+    ) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
+        this.rolRepository = rolRepository;
+        this.authenticationManager = authenticationManager;
     }
 
     @Override
@@ -55,9 +96,31 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @CacheEvict(value = "usuariosLista", allEntries = true)
     public UsuarioDTO.UsuarioCrearDTO crearUsuario(UsuarioDTO.UsuarioCrearDTO usuarioDTO) {
+        if (usuarioRepository.existsByUsuario(usuarioDTO.getUsuario())) {
+            throw new IllegalArgumentException("Usuario existente, ingrese otro.");
+        }
+
         Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
-        return usuarioMapper.toUsuarioCrear(usuarioRepository.save(usuario));
+
+        // Encripta la contraseña antes de guardar
+        usuario.setPassword(passwordEncoder.encode(usuarioDTO.getPassword()));
+
+        Set<Rol> roles = new HashSet<>();
+
+        if (usuario.getRoles() == null || usuario.getRoles().isEmpty()) {
+            Rol usuarioRol = rolRepository.findByNombre(Rol.NombreRol.ROL_USUARIO)
+                    .orElseThrow(() -> new RuntimeException("Error: No se encontró el rol"));
+            roles.add(usuarioRol);
+        }
+
+        usuario.setRoles(roles);
+        usuarioRepository.save(usuario);
+
+        return usuarioDTO; // Devuelve los mismos datos que se recibieron (sin incluir ID generado ni fecha, etc.)
     }
+
+
+
 
     @Override
     @CacheEvict(value = { "usuarioPerfil", "usuariosLista" }, key = "#usuarioDTO.id", allEntries = true)
@@ -73,5 +136,25 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setGenero(usuarioDTO.getGenero());
         usuario.setUrlImg(usuarioDTO.getUrlImg());
         return usuarioMapper.toUsuarioModificar(usuarioRepository.save(usuario));
+    }
+
+    @Override
+    public AuthDTO.JwtResponse devolverToken(AuthDTO.LoginRequest loginRequest){
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+        Usuario usuario = usuarioRepository.findByUsuario(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado."));
+        return new AuthDTO.JwtResponse(jwt,
+                usuario.getId(),
+                userDetails.getUsername(),
+                usuario.getEmail(),
+                new HashSet<>(roles));
     }
 }
