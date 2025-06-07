@@ -22,7 +22,6 @@ public class Vehiculo {
 
 
     @Column(unique = true)
-
     private String placa;
 
     @NotBlank(message = "La marca es obligatoria")
@@ -34,13 +33,13 @@ public class Vehiculo {
 
     private String color;
 
-    private int capacidad;
+    private Integer capacidad;
 
     private String estado;
 
     private String descripcion;
 
-    private int cantAsientos;
+    private Integer cantAsientos;
 
     private LocalDateTime fechaRegistro;
 
