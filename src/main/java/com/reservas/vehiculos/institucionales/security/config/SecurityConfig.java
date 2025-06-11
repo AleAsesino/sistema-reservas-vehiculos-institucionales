@@ -48,6 +48,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("*************** SecurityConfig: securityFilterChain está siendo cargado ***************"); // <-- ¡Añade esta línea!
         http
                 .cors(cors -> {}) // habilita CORS sin desactivarlo
                 .csrf(csrf -> csrf.disable())
@@ -63,7 +64,7 @@ public class SecurityConfig {
                                 "/api/v3/api-docs/**",
                                 "/api/swagger-resources/**",
                                 "/api/webjars/**",
-                                "/api/usuarios/**",
+                                "/api/usuarios/login",
                                 "/api/auth/**",
                                 "/api/vehiculos/**"
                         ).permitAll()

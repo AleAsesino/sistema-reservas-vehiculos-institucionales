@@ -13,4 +13,5 @@ public interface UsuarioService {
     UsuarioDTO.UsuarioCrearDTO crearUsuario(UsuarioDTO.UsuarioCrearDTO usuarioDTO);
     UsuarioDTO.UsuarioModificarDTO modificarUsuario(UsuarioDTO.UsuarioModificarDTO usuarioDTO);
     AuthDTO.JwtResponse devolverToken(AuthDTO.LoginRequest loginRequest);
+    void asignarRolUsuario(Long id_usuario, String rolAsignado);
 }

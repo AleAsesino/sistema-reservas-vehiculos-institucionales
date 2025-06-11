@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,15 +113,12 @@ public class UsuarioServiceImpl implements UsuarioService {
                     .orElseThrow(() -> new RuntimeException("Error: No se encontró el rol"));
             roles.add(usuarioRol);
         }
-
+        usuario.setFechaRegistro(LocalDateTime.now());
         usuario.setRoles(roles);
         usuarioRepository.save(usuario);
 
         return usuarioDTO; // Devuelve los mismos datos que se recibieron (sin incluir ID generado ni fecha, etc.)
     }
-
-
-
 
     @Override
     @CacheEvict(value = { "usuarioPerfil", "usuariosLista" }, key = "#usuarioDTO.id", allEntries = true)
@@ -135,6 +133,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setCiudad(usuarioDTO.getCiudad());
         usuario.setGenero(usuarioDTO.getGenero());
         usuario.setUrlImg(usuarioDTO.getUrlImg());
+        usuario.setFechaUltimaModificacion(LocalDateTime.now());
         return usuarioMapper.toUsuarioModificar(usuarioRepository.save(usuario));
     }
 
@@ -156,5 +155,31 @@ public class UsuarioServiceImpl implements UsuarioService {
                 userDetails.getUsername(),
                 usuario.getEmail(),
                 new HashSet<>(roles));
+    }
+
+    @Override
+    public void asignarRolUsuario(Long id_usuario, String rolAsignado){
+        Usuario usuario = usuarioRepository.findById(id_usuario)
+                .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
+        if(usuario.getRoles().isEmpty()){
+            Set<Rol> roles = new HashSet<>();
+            usuario.setRoles(roles);
+        }
+        if(rolAsignado.equals("administrador")){
+            Rol usuarioRol = rolRepository.findByNombre(Rol.NombreRol.ROL_ADMIN)
+                    .orElseThrow(()-> new RuntimeException("Error: No se encontro el rol"));
+            usuario.getRoles().add(usuarioRol);
+        } else if (rolAsignado.equals("inspector")) {
+            Rol usuarioRol = rolRepository.findByNombre(Rol.NombreRol.ROL_INSPECTOR)
+                    .orElseThrow(()-> new RuntimeException("Error: No se encontro el rol"));
+            usuario.getRoles().add(usuarioRol);
+        } else{
+            Rol usuarioRol = rolRepository.findByNombre(Rol.NombreRol.ROL_USUARIO)
+                    .orElseThrow(()-> new RuntimeException("Error: No se encontro el rol"));
+            usuario.getRoles().add(usuarioRol);
+        }
+        usuarioRepository.save(usuario);
+
+
     }
 }
