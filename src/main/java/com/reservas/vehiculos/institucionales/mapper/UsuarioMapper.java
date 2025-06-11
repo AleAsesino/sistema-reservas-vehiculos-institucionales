@@ -15,6 +15,15 @@ public interface UsuarioMapper {
     //@Mapping(target = "estadoCuenta", constant = "true")
     //@Mapping(target = "reservas", ignore = true)
     //@Mapping(target = "roles", ignore = true)
+
+
+    @Mapping(target = "estadoCuenta", ignore = true) // 'estadoCuenta' se setea en el servicio
+    @Mapping(target = "reservas", ignore = true)     // 'reservas' no viene en UsuarioCrearDTO
+    @Mapping(target = "roles", ignore = true)        // 'roles' se setea en el servicio
+    @Mapping(target = "fechaRegistro", ignore = true) // 'fechaRegistro' se setea en el servicio
+    @Mapping(target = "fechaUltimaModificacion", ignore = true) // No viene en crear, se setea en modificar
+    @Mapping(target = "id", ignore = true)           // ID es autogenerado
+    @Mapping(target = "password", ignore = true)
     Usuario toEntity(UsuarioDTO.UsuarioCrearDTO usuarioDTO);
 
     UsuarioDTO.UsuarioCrearDTO toUsuarioCrear(Usuario usuario);

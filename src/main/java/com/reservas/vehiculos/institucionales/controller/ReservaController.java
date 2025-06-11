@@ -32,14 +32,14 @@ public class ReservaController {
     private ReservaValidation reservaValidation;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     @Cacheable(value = "reservas", key = "'allReservas'")
     public ResponseEntity<List<ReservaDTO>> getAllReservas() {
         return ResponseEntity.ok(reservaService.findAll());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     @Cacheable(value = "reservas", key = "#id")
     public ResponseEntity<ReservaDTO> getReservaById(@PathVariable Long id) {
         Optional<ReservaDTO> reserva = reservaService.findById(id);
@@ -55,21 +55,21 @@ public class ReservaController {
     }
 
     @GetMapping("/vehiculo/{vehiculoId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     @Cacheable(value = "reservas", key = "'reservasVehiculo_' + #vehiculoId")
     public ResponseEntity<List<ReservaDTO>> getReservasByVehiculo(@PathVariable Long vehiculoId) {
         return ResponseEntity.ok(reservaService.findByVehiculoId(vehiculoId));
     }
 
     @GetMapping("/activas")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     @Cacheable(value = "reservas", key = "'reservasActivas'")
     public ResponseEntity<List<ReservaDTO>> getActiveReservas() {
         return ResponseEntity.ok(reservaService.findActiveReservas());
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     @CacheEvict(value = "reservas", allEntries = true)
     public ResponseEntity<?> createReserva(@Valid @RequestBody ReservaDTO reservaDTO, BindingResult result) {
         reservaValidation.validate(reservaDTO, result);
@@ -142,7 +142,7 @@ public class ReservaController {
     }
 
     @GetMapping("/vehiculo/{vehiculoId}/disponibilidad")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<Map<String, Boolean>> checkVehiculoAvailability(
             @PathVariable Long vehiculoId,
             @RequestParam LocalDateTime fechaInicio,

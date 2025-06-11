@@ -4,6 +4,7 @@ import com.reservas.vehiculos.institucionales.dto.ReparacionDTO;
 import com.reservas.vehiculos.institucionales.model.Reparacion;
 import com.reservas.vehiculos.institucionales.service.ReparacionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,11 +20,13 @@ public class ReparacionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Reparacion> crear(@RequestBody ReparacionDTO dto) {
         return ResponseEntity.ok(service.crearReparacion(dto));
     }
 
     @GetMapping("/auto/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Reparacion>> listar(@PathVariable Long id) {
         return ResponseEntity.ok(service.listarReparacionesPorAuto(id));
     }

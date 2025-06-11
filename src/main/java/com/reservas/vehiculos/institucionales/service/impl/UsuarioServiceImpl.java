@@ -70,7 +70,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    @Cacheable(value = "usuariosLista")
     public List<UsuarioDTO.UsuariosLista> obtenerTodosLosUsuarios() {
         return usuarioRepository.findAll().stream()
                 .map(usuarioMapper::toUsuarioLista)
@@ -78,7 +77,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    @Cacheable(value = "usuarioPerfil", key = "#id")
     public UsuarioDTO.UsuarioMostrarPerfil obtenerUsuarioDatos(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));

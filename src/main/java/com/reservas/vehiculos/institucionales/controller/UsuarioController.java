@@ -31,13 +31,13 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.obtenerTodosLosUsuarios());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN' , 'INSPECTOR', 'USUARIO')")
+    @PreAuthorize("hasAnyRole('ADMIN' , 'INSPECTOR')")
     @GetMapping("/info/{id}")
     public ResponseEntity<UsuarioDTO.UsuarioMostrarPerfil> obtenerInformacionPersonalDeUsuario(@PathVariable Long id){
         return ResponseEntity.ok(usuarioService.obtenerUsuarioDatos(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN' , 'USUARIO')")
+    @PermitAll
     @PostMapping
     public ResponseEntity<UsuarioDTO.UsuarioCrearDTO> crearUsuario(@RequestBody UsuarioDTO.UsuarioCrearDTO usuarioDTO){
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.crearUsuario(usuarioDTO));
@@ -49,8 +49,8 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.modificarUsuario(usuarioDTO));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN' , 'USUARIO')")
-    @DeleteMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> darBajaUsuario(@PathVariable Long id){
         usuarioService.DarBajaUsuario(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -68,5 +68,4 @@ public class UsuarioController {
         usuarioService.asignarRolUsuario(id_usuario,rol);
         return ResponseEntity.ok().build();
     }
-
 }
