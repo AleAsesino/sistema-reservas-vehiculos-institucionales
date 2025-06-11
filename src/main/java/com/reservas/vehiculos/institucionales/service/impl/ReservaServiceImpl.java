@@ -1,6 +1,7 @@
 package com.reservas.vehiculos.institucionales.service.impl;
 
 import com.reservas.vehiculos.institucionales.dto.ReservaDTO;
+import com.reservas.vehiculos.institucionales.model.EstadoReserva;
 import com.reservas.vehiculos.institucionales.model.Reserva;
 import com.reservas.vehiculos.institucionales.model.Usuario;
 import com.reservas.vehiculos.institucionales.model.Vehiculo;
@@ -77,6 +78,7 @@ public class ReservaServiceImpl implements ReservaService {
     public ReservaDTO save(ReservaDTO reservaDTO) {
         Reserva reserva = convertToEntity(reservaDTO);
         reserva.setFechaReserva(LocalDateTime.now());
+        reserva.setEstado(EstadoReserva.RESERVADO);
         reserva = reservaRepository.save(reserva);
         return convertToDTO(reserva);
     }
@@ -89,26 +91,40 @@ public class ReservaServiceImpl implements ReservaService {
             Reserva reserva = reservaOptional.get();
 
             LocalDateTime fechaReservaOriginal = reserva.getFechaReserva();
-
+            EstadoReserva estadoOriginal = reserva.getEstado();
 
             reserva.setDescripcion(reservaDTO.getDescripcion());
-
             reserva.setFechaInicio(reservaDTO.getFechaInicio());
-
             reserva.setFechaFin(reservaDTO.getFechaFin());
+            if (reservaDTO.getEstado() != null && 
+                reservaDTO.getEstado().equalsIgnoreCase(EstadoReserva.EN_USO.name())) {
+                throw new IllegalStateException("No se puede modificar una reserva que está en uso");
+            }
+            
+            if (reservaDTO.getEstado() != null && 
+                reservaDTO.getEstado().equalsIgnoreCase(EstadoReserva.FINALIZADO.name())) {
+                throw new IllegalStateException("No se puede modificar una reserva finalizada");
+            }
 
+            if (reservaDTO.getEstado() != null) {
+                try {
+                    reserva.setEstado(EstadoReserva.valueOf(reservaDTO.getEstado().toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    reserva.setEstado(estadoOriginal);
+                }
+            } else {
+                reserva.setEstado(estadoOriginal);
+            }
 
             if (reservaDTO.getUsuarioId() != null) {
                 usuarioRepository.findById(reservaDTO.getUsuarioId())
                         .ifPresent(reserva::setUsuario);
             }
 
-
             if (reservaDTO.getVehiculoIds() != null && !reservaDTO.getVehiculoIds().isEmpty()) {
                 List<Vehiculo> vehiculos = vehiculoRepository.findAllById(reservaDTO.getVehiculoIds());
                 reserva.setVehiculos(vehiculos);
             }
-
 
             reserva.setFechaReserva(fechaReservaOriginal);
 
@@ -147,14 +163,12 @@ public class ReservaServiceImpl implements ReservaService {
         return ReservaDTO.builder()
                 .id(reserva.getId())
                 .descripcion(reserva.getDescripcion())
-
                 .fechaInicio(reserva.getFechaInicio())
-
                 .fechaFin(reserva.getFechaFin())
-
                 .fechaReserva(reserva.getFechaReserva())
                 .usuarioId(reserva.getUsuario() != null ? reserva.getUsuario().getId() : null)
                 .vehiculoIds(vehiculoIds)
+                .estado(reserva.getEstado() != null ? reserva.getEstado().name() : null)
                 .build();
     }
 
@@ -162,19 +176,24 @@ public class ReservaServiceImpl implements ReservaService {
         Reserva reserva = new Reserva();
         reserva.setId(reservaDTO.getId());
         reserva.setDescripcion(reservaDTO.getDescripcion());
-
         reserva.setFechaInicio(reservaDTO.getFechaInicio());
-
         reserva.setFechaFin(reservaDTO.getFechaFin());
-
         reserva.setFechaReserva(reservaDTO.getFechaReserva());
-
+        
+        if (reservaDTO.getEstado() != null && 
+            reservaDTO.getEstado().equalsIgnoreCase(EstadoReserva.EN_USO.name())) {
+            throw new IllegalStateException("No se puede modificar una reserva que está en uso");
+        }
+        
+        if (reservaDTO.getEstado() != null && 
+            reservaDTO.getEstado().equalsIgnoreCase(EstadoReserva.FINALIZADO.name())) {
+            throw new IllegalStateException("No se puede modificar una reserva finalizada");
+        }
 
         if (reservaDTO.getUsuarioId() != null) {
             usuarioRepository.findById(reservaDTO.getUsuarioId())
                     .ifPresent(reserva::setUsuario);
         }
-
 
         if (reservaDTO.getVehiculoIds() != null && !reservaDTO.getVehiculoIds().isEmpty()) {
             List<Vehiculo> vehiculos = vehiculoRepository.findAllById(reservaDTO.getVehiculoIds());

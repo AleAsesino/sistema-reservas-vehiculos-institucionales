@@ -1,14 +1,17 @@
 package com.reservas.vehiculos.institucionales.controller;
-
+import com.reservas.vehiculos.institucionales.model.EstadoReserva;
 import com.reservas.vehiculos.institucionales.dto.ReservaDTO;
 import com.reservas.vehiculos.institucionales.service.ReservaService;
 import com.reservas.vehiculos.institucionales.validation.ReservaValidation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -29,12 +32,15 @@ public class ReservaController {
     private ReservaValidation reservaValidation;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @Cacheable(value = "reservas", key = "'allReservas'")
     public ResponseEntity<List<ReservaDTO>> getAllReservas() {
-        List<ReservaDTO> reservas = reservaService.findAll();
-        return ResponseEntity.ok(reservas);
+        return ResponseEntity.ok(reservaService.findAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @Cacheable(value = "reservas", key = "#id")
     public ResponseEntity<ReservaDTO> getReservaById(@PathVariable Long id) {
         Optional<ReservaDTO> reserva = reservaService.findById(id);
         return reserva.map(ResponseEntity::ok)
@@ -42,32 +48,35 @@ public class ReservaController {
     }
 
     @GetMapping("/usuario/{usuarioId}")
+    @PreAuthorize("hasRole('ADMIN') or #usuarioId == authentication.principal.id")
+    @Cacheable(value = "reservas", key = "'reservasUsuario_' + #usuarioId")
     public ResponseEntity<List<ReservaDTO>> getReservasByUsuario(@PathVariable Long usuarioId) {
-        List<ReservaDTO> reservas = reservaService.findByUsuarioId(usuarioId);
-        return ResponseEntity.ok(reservas);
+        return ResponseEntity.ok(reservaService.findByUsuarioId(usuarioId));
     }
 
     @GetMapping("/vehiculo/{vehiculoId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @Cacheable(value = "reservas", key = "'reservasVehiculo_' + #vehiculoId")
     public ResponseEntity<List<ReservaDTO>> getReservasByVehiculo(@PathVariable Long vehiculoId) {
-        List<ReservaDTO> reservas = reservaService.findByVehiculoId(vehiculoId);
-        return ResponseEntity.ok(reservas);
+        return ResponseEntity.ok(reservaService.findByVehiculoId(vehiculoId));
     }
 
     @GetMapping("/activas")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @Cacheable(value = "reservas", key = "'reservasActivas'")
     public ResponseEntity<List<ReservaDTO>> getActiveReservas() {
-        List<ReservaDTO> reservas = reservaService.findActiveReservas();
-        return ResponseEntity.ok(reservas);
+        return ResponseEntity.ok(reservaService.findActiveReservas());
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    @CacheEvict(value = "reservas", allEntries = true)
     public ResponseEntity<?> createReserva(@Valid @RequestBody ReservaDTO reservaDTO, BindingResult result) {
-
         reservaValidation.validate(reservaDTO, result);
         
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(formatErrors(result));
         }
-        
 
         if (!reservaService.areAllVehiculosAvailable(
                 reservaDTO.getVehiculoIds(), 
@@ -83,28 +92,26 @@ public class ReservaController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "reservas", allEntries = true)
     public ResponseEntity<?> updateReserva(
             @PathVariable Long id,
             @Valid @RequestBody ReservaDTO reservaDTO,
             BindingResult result) {
         
-
         Optional<ReservaDTO> existingReserva = reservaService.findById(id);
         if (existingReserva.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        
 
         reservaValidation.validate(reservaDTO, result);
         
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body(formatErrors(result));
         }
-        
 
         List<Long> existingVehiculoIds = existingReserva.get().getVehiculoIds();
         List<Long> newVehiculoIds = reservaDTO.getVehiculoIds();
-        
 
         List<Long> vehiculosToCheck = newVehiculoIds.stream()
                 .filter(vehiculoId -> !existingVehiculoIds.contains(vehiculoId))
@@ -122,6 +129,8 @@ public class ReservaController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "reservas", allEntries = true)
     public ResponseEntity<?> deleteReserva(@PathVariable Long id) {
         Optional<ReservaDTO> existingReserva = reservaService.findById(id);
         if (existingReserva.isEmpty()) {
@@ -133,6 +142,7 @@ public class ReservaController {
     }
 
     @GetMapping("/vehiculo/{vehiculoId}/disponibilidad")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<Map<String, Boolean>> checkVehiculoAvailability(
             @PathVariable Long vehiculoId,
             @RequestParam LocalDateTime fechaInicio,
@@ -144,6 +154,32 @@ public class ReservaController {
         response.put("disponible", disponible);
         
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "reservas", allEntries = true)
+    public ResponseEntity<?> updateReservaEstado(
+            @PathVariable Long id,
+            @RequestParam("estado") String estado) {
+        
+        Optional<ReservaDTO> existingReserva = reservaService.findById(id);
+        if (existingReserva.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            EstadoReserva estadoReserva = EstadoReserva.valueOf(estado.toUpperCase());
+            ReservaDTO reservaDTO = existingReserva.get();
+            reservaDTO.setEstado(estadoReserva.name());
+            
+            ReservaDTO updatedReserva = reservaService.update(id, reservaDTO);
+            return ResponseEntity.ok(updatedReserva);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("estado", "Estado inválido. Los valores permitidos son: RESERVADO, EN_USO, FINALIZADO");
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 
     private Map<String, String> formatErrors(BindingResult result) {

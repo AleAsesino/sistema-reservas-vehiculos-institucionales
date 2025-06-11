@@ -38,4 +38,6 @@ public class ReservaDTO {
     
     @NotEmpty(message = "Debe seleccionar al menos un vehículo")
     private List<Long> vehiculoIds;
+
+    private String estado;
 } 
